@@ -1,0 +1,36 @@
+{
+  "name": "toro-lang",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "compile": "cross-env npx tsc",
+    "test": "cross-env jest --verbose",
+    "start": "npx ts-node src/toro.ts",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "lint": "tslint -p tsconfig.json -c tslint.json"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^7.0.0",
+    "@commitlint/config-conventional": "^7.0.1",
+    "@types/aggregate-error": "^1.0.0",
+    "@types/jest": "^23.3.1",
+    "@types/node": "^10.5.5",
+    "@types/parsimmon": "^1.10.0",
+    "@types/ramda": "^0.25.36",
+    "cross-env": "^5.2.0",
+    "husky": "^1.0.0-rc.13",
+    "jest": "^23.4.2",
+    "ts-jest": "^23.1.2",
+    "ts-node": "^7.0.0",
+    "tslint": "^5.11.0",
+    "tslint-config-prettier": "^1.14.0",
+    "typescript": "^3.0.1"
+  },
+  "dependencies": {
+    "aggregate-error": "^1.0.0",
+    "immutable": "4.0.0-rc.9",
+    "parsimmon": "^1.12.0",
+    "ramda": "^0.25.0"
+  }
+}
