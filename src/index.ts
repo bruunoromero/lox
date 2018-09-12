@@ -1,3 +1,3 @@
-import { Lox } from "./lox";
+import { Lox } from './lox';
 
-Lox.main();
+Lox.main()

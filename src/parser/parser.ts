@@ -1,6 +1,6 @@
-import { Expr, Literal, Grouping, Unary, Binary } from "./ast";
-import { Token, TokenType } from "./../lexer/token";
 import { Lox } from "../lox";
+import { Token, TokenType } from "./../lexer/token";
+import { Expr, Literal, Grouping, Unary, Binary } from "./ast";
 
 export class Parser {
   current: number;
