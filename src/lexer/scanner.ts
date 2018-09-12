@@ -1,12 +1,33 @@
 import { Map } from "immutable";
+
+import { Lox } from "../lox";
 import { Token, TokenType } from "./token";
+
+const KEYWORDS = Map({
+  and: TokenType.AND,
+  class: TokenType.CLASS,
+  else: TokenType.ELSE,
+  false: TokenType.FALSE,
+  for: TokenType.FOR,
+  fun: TokenType.FUN,
+  if: TokenType.IF,
+  nil: TokenType.NIL,
+  or: TokenType.OR,
+  print: TokenType.PRINT,
+  return: TokenType.RETURN,
+  super: TokenType.SUPER,
+  this: TokenType.THIS,
+  true: TokenType.TRUE,
+  var: TokenType.VAR,
+  while: TokenType.WHILE,
+});
 
 export class Scanner {
   private line: number;
   private start: number;
   private current: number;
   private tokens: Token[];
-  private typeMap: Map<string, () => void>;
+  private readonly typeMap: Map<string, () => void>;
 
   constructor(private readonly source: string) {
     this.line = 1;
@@ -37,12 +58,9 @@ export class Scanner {
         this.addToken(
           this.match("=") ? TokenType.GREATER_EQUAL : TokenType.GREATER,
         ),
-      " ": this.noop,
-      "\r": this.noop,
-      "\t": this.noop,
-      '"': this.string,
-      "\n": this.newLine,
-      "/": this.surmiseSlash,
+      '"': () => this.string(),
+      "\n": () => this.newLine(),
+      "/": () => this.surmiseSlash(),
     });
   }
 
@@ -64,11 +82,17 @@ export class Scanner {
 
   private scanToken() {
     const c = this.advance();
-    // TODO: Check if c is a digit and parse a number if so.
-    const tokenize = this.typeMap.get(c);
 
-    if (tokenize) {
-      tokenize();
+    if (this.isDigit(c)) {
+      this.number();
+    } else if (this.isAlpha(c)) {
+      this.identifier();
+    } else if (!/\r|\t/.test(c)) {
+      const tokenize = this.typeMap.get(c);
+
+      if (tokenize) {
+        tokenize();
+      }
     }
   }
 
@@ -76,38 +100,69 @@ export class Scanner {
     this.line++;
   }
 
+  private identifier() {
+    while (this.isAlphaNumeric(this.peek)) this.advance();
+
+    const text = this.source.slice(this.start, this.current);
+    const type = KEYWORDS.get(text) || TokenType.IDENTIFIER;
+
+    this.addToken(type);
+  }
+
   private string() {
-    while (this.peek() !== '"' && !this.isEnd) {
-      if (this.peek() === "\n") this.newLine();
+    while (this.peek !== '"' && !this.isEnd) {
+      if (this.peek === "\n") this.newLine();
       this.advance();
     }
 
     // Unterminated string.
     if (this.isEnd) {
-      // Lox.error(line, "Unterminated string.");
+      Lox.error(this.line, "Unterminated string.");
     }
 
-    // The closing ".
     this.advance();
 
-    // Trim the surrounding quotes.
-    const value = this.source.substring(this.start + 1, this.current - 1);
+    const value = this.source.slice(this.start + 1, this.current - 1);
     this.addToken(TokenType.STRING, value);
+  }
+
+  private number() {
+    while (this.isDigit(this.peek)) this.advance();
+
+    if (this.peek === "." && this.isDigit(this.peekNext)) {
+      this.advance();
+      while (this.isDigit(this.peek)) this.advance();
+    }
+
+    this.addToken(
+      TokenType.NUMBER,
+      Number(this.source.slice(this.start, this.current)),
+    );
   }
 
   private surmiseSlash() {
     if (this.match("/")) {
-      while (this.peek() !== "\n" && !this.isEnd) this.advance();
+      while (this.peek !== "\n" && !this.isEnd) this.advance();
     } else {
       this.addToken(TokenType.SLASH);
     }
   }
 
+  private isAlpha(c: string): boolean {
+    return /[a-zA-Z_]/.test(c);
+  }
+
+  private isDigit(c: string): boolean {
+    return !/\s/.test(c) && !isNaN(Number(c));
+  }
+
+  private isAlphaNumeric(c: string): boolean {
+    return this.isDigit(c) || this.isAlpha(c);
+  }
+
   private addToken(type: TokenType, literal: any = null) {
-    if (type !== TokenType.SKIP) {
-      const text = this.source.substring(this.start, this.current);
-      this.tokens.push(new Token(type, text, literal, this.line));
-    }
+    const text = this.source.slice(this.start, this.current);
+    this.tokens.push(new Token(type, text, literal, this.line));
   }
 
   private match(expected: string): boolean {
@@ -123,9 +178,14 @@ export class Scanner {
     return this.source[this.current - 1];
   }
 
-  private peek(): string {
+  private get peek(): string {
     if (this.isEnd) return "\0";
     return this.source[this.current];
+  }
+
+  private get peekNext(): string {
+    if (this.current + 1 >= this.source.length) return "\0";
+    return this.source[this.current + 1];
   }
 
   private get isEnd(): boolean {

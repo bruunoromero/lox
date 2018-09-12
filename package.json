@@ -6,7 +6,7 @@
   "scripts": {
     "compile": "cross-env npx tsc",
     "test": "cross-env jest --verbose",
-    "start": "npx ts-node src/toro.ts",
+    "start": "npx ts-node src/index.ts",
     "format": "prettier --write \"src/**/*.ts\"",
     "lint": "tslint -p tsconfig.json -c tslint.json"
   },

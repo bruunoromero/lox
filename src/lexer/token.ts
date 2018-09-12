@@ -27,7 +27,24 @@ export enum TokenType {
   STRING,
   NUMBER,
 
-  SKIP,
+  // Keywords.
+  AND,
+  CLASS,
+  ELSE,
+  FALSE,
+  FOR,
+  FUN,
+  IF,
+  NIL,
+  OR,
+  PRINT,
+  RETURN,
+  SUPER,
+  THIS,
+  TRUE,
+  VAR,
+  WHILE,
+
   EOF,
 }
 
